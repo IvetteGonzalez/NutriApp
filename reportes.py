@@ -6,7 +6,7 @@ from flet.plotly_chart import PlotlyChart
 
 class UIReportes(ft.Container):
     def __init__(self, page:ft.Page):
-        super().__init__(expand=True)
+        super().__init__("/reportes",expand=True)
         self.page=page
         self.page.padding = 0
 
@@ -80,7 +80,7 @@ class UIReportes(ft.Container):
             border_radius= 50,
             padding=10,
             alignment=ft.alignment.center,
-            on_change=self.dropdown_changed,
+            on_change=lambda e: self.dropdown_changed(e),
             options=[
                 ft.dropdownm2.Option(1,"Reporte por Género"),
                 ft.dropdownm2.Option(2,"Reporte Movimiento de peso por paciente"),
@@ -126,41 +126,100 @@ class UIReportes(ft.Container):
                 #on_chart_event=on_chart_event,
                 expand=True,
             ),
-            offset=ft.transform.Offset(1, 0)
+            visible= False
         )
+
         self.df_linea = px.data.gapminder().query("continent=='Oceania'")
         self.fig = px.line(self.df_linea, x="year", y="lifeExp", color="country")
         self.grafico_peso= ft.Container(content=PlotlyChart(self.fig, expand=True),
-                                        offset=ft.transform.Offset(1,0)
+                                        visible=False
                                         )
 
         self.data_canada = px.data.gapminder().query("country == 'Canada'")
         self.fig_barras = px.bar(self.data_canada, x='year', y='pop')
         self.grafico_edades=ft.Container(
             content=(PlotlyChart(self.fig_barras,expand=True)),
-            offset=ft.transform.Offset(1, 0)
+            visible = False
         )
 
+        self.head_reportes = ft.Container(
+            ft.Container(
+                expand=True,
+                border_radius=20,
+                content=ft.Column(
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.alignment.center,
+                    controls=[
+                        ft.Text("REPORTES", theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM),
+                        ft.Text("Seleccione el reporte deseado:",
+                                theme_style=ft.TextThemeStyle.HEADLINE_MEDIUM),
+                        ft.Divider(height=2, color="green"),
 
+                        self.select_reporte,
+                    ],
+                )
+            )
 
+        )
 
         self.graficosframe = ft.Container(
-            content=ft.Column(
+            expand=True,
+            content= ft.Column(
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 alignment=ft.alignment.center,
                 controls=[
-                    ft.Text("REPORTES",theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM),
-                    ft.Text("Seleccione el reporte deseado:",theme_style=ft.TextThemeStyle.HEADLINE_MEDIUM),
-                    ft.Divider(height=2, color="green"),
-                    self.select_reporte,
                     self.grafico_genero,
                     self.grafico_peso,
                     self.grafico_edades
+                          ],
+                )
+            )
 
-                ],
-                offset=ft.transform.Offset(0,0)
+
+
+
+        self.graficosframe_bk= ft.Container(
+            expand=True,
+            content=ft.Stack(
+                alignment=ft.alignment.top_center,
+                controls=[
+                    ft.Container(
+                        expand=True,
+                        border_radius=20,
+                        content=ft.Column(
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            alignment=ft.alignment.center,
+                            controls=[
+                                ft.Column(
+                                    controls=[
+                                        ft.Card(
+                                            content=ft.Container(
+                                                content=ft.Column(
+                                                    [
+
+                                                    ]
+                                                ),
+                                                width=600,
+                                                height=400,
+                                                padding=10,
+                                            ),
+
+                                        ),
+                                    ],
+                                    height=100,
+                                    #offset=ft.transform.Offset(2, 2),
+                                    horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                                    alignment = ft.alignment.center,
+                                )
+
+                            ],
+                        )
+                    )
+                ]
             )
         )
+
+
 
 
 
@@ -177,8 +236,10 @@ class UIReportes(ft.Container):
         self.content_element = ft.Container(
             expand=True,
             bgcolor=self.container_color,
-            content= ft.Stack(
+            content= ft.Column(
                 controls=[
+                    self.head_reportes,
+
                     self.graficosframe
                 ]
             )
@@ -214,9 +275,6 @@ class UIReportes(ft.Container):
             bgcolor=ft.Colors.WHITE,
         )
 
-
-
-
     def badgefunction(icon, size):
         return ft.Container(
             ft.Icon(icon),
@@ -227,36 +285,28 @@ class UIReportes(ft.Container):
             bgcolor=ft.Colors.WHITE,
         )
 
-    def ocultar_chart(self):
-        self.grafico_genero.offset = ft.transform.Offset(1, 0),
-        self.grafico_peso.offset = ft.transform.Offset(1, 0),
-        self.grafico_edades.offset = ft.transform.Offset(1, 0)
-
-
 
     def dropdown_changed(self,e):
         print("on change en construcción")
         print(self.select_reporte.value)
-
-        if self.select_reporte.value == 1:
-            print(1)
-            self.grafico_genero.offset = ft.transform.Offset(0, 0),
-            self.grafico_peso.offset = ft.transform.Offset(1, 0),
-            self.grafico_edades.offset = ft.transform.Offset(1, 0)
-
-        elif self.select_reporte.value == 2:
-            print(2)
-            self.grafico_genero.offset = ft.transform.Offset(1, 0),
-            self.grafico_peso.offset = ft.transform.Offset(0, 0),
-            self.grafico_edades.offset = ft.transform.Offset(1, 0)
-        elif self.select_reporte.value == 3:
-            print(3)
-            self.grafico_genero.offset = ft.transform.Offset(1, 0),
-            self.grafico_peso.offset = ft.transform.Offset(1, 0),
-            self.grafico_edades.offset = ft.transform.Offset(0, 0)
+        self.grafico_genero.visible = False
+        self.grafico_edades.visible = False
+        self.grafico_peso.visible = False
 
 
+        if self.select_reporte.value == "1":
+            self.grafico_genero.visible = True
+            self.page.controls.append(self.grafico_genero)
+        elif self.select_reporte.value == "2":
+            self.grafico_peso.visible = True
+            self.page.controls.append(self.grafico_peso)
+        elif self.select_reporte.value == "3":
+            self.grafico_edades.visible = True
+            self.page.controls.append(self.grafico_edades)
         self.page.update()
+
+
+
 
 
 

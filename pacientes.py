@@ -2,9 +2,9 @@ import flet as ft
 import pandas as pd
 
 
-class UIPacientes(ft.Container):
+class UIPacientes(ft.View):
     def __init__(self, page:ft.Page):
-        super().__init__(expand=True)
+        super().__init__(route="/pacientes")
         self.page = page
 
         # Variables

@@ -1,11 +1,11 @@
 import flet as ft
 
 
-class UINutricion(ft.Container):
+class UINutricion(ft.View):
     def __init__(self, page:ft.Page):
-        super().__init__(expand=True)
-        self.page=page
-        self.page.padding=0
+        super().__init__(route="/")
+        self.page = page
+        self.page.padding = 0
 
         ##Define Colors
         self.color_blue = "#73b1fc"
@@ -13,7 +13,7 @@ class UINutricion(ft.Container):
         self.color_purple = ft.Colors.TEAL_ACCENT_700
         self.color_green = ft.Colors.TEAL_ACCENT_700
         self.bg_color = "#396564"
-        #self.bg_color = "#3f3965"396564
+        #self.bg_color = "#3f3965"396564>
         #self.container_color = "#362e57"
         self.container_color = ft.Colors.TEAL_800
         #self.color_navigation_bt = "#2a2949"
@@ -180,6 +180,9 @@ class UINutricion(ft.Container):
 
 
     def change_page(self, e, n):
+        print("Change_ page")
+
+
         for page in self.switch_control_btns:
             self.switch_control_btns[page].offset.y = 2
             self.option_1.bgcolor = self.color_navigation_bt,
@@ -192,6 +195,7 @@ class UINutricion(ft.Container):
                 self.option_3.offset.x = 0
                 self.option_1.bgcolor = self.color_purple
                 self.option_1.update()
+                #self.page.go("/pacientes")
             elif n == 2:
                 self.option_1.offset.x = 0
                 self.option_2.offset.x = 0.15
@@ -204,7 +208,7 @@ class UINutricion(ft.Container):
                 self.option_3.offset.x = 0.15
                 self.option_3.bgcolor = self.color_purple
                 self.option_3.update()
-            self.page.update()
+            #self.page.update()
 
 
 ft.app(target=lambda page:UINutricion(page))
