@@ -13,9 +13,10 @@ class UINutricion(ft.View):
         self.bg_color = "#1fed6a"
         self.container_color = "#d0f5e5"
         self.color_purple = ft.Colors.TEAL_ACCENT_700
-        self.color_navigation_bt = ft.Colors.LIGHT_GREEN_900
+        self.color_navigation_bt = "#27c3ea"
         self.color_text_search = "#0c5c39"
         self.color_text_table="#204032"
+        self.bg_color_head="#005954"
 
 
         #Settings Colors
@@ -55,11 +56,11 @@ class UINutricion(ft.View):
 
         #####Componentes Generales ######
         page.appbar = ft.AppBar(
-            leading=ft.Icon(ft.Icons.FAVORITE_ROUNDED,color=ft.Colors.GREEN_400, size=30),
+            leading=ft.Icon(ft.Icons.FAVORITE_ROUNDED,color=ft.Colors.WHITE, size=30),
             leading_width=40,
-            title=ft.Text("NutriApp",theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM,font_family="Kanit" ),
-            center_title=True,
-            bgcolor=ft.Colors.LIGHT_GREEN_900,
+            title=ft.Text("N u t r i A p p",theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM,italic=True,weight="bold" ),
+            center_title=False,
+            bgcolor=self.bg_color_head,
             actions=[
                 ft.IconButton(ft.Icons.WB_SUNNY_OUTLINED),
                 #ft.IconButton(ft.Icons.FILTER_3),
@@ -76,7 +77,7 @@ class UINutricion(ft.View):
         )
 
         page.navigation_bar = ft.NavigationBar(
-            bgcolor=ft.Colors.LIGHT_GREEN_900,
+            bgcolor=self.bg_color_head,
             destinations=[
                 ft.NavigationBarDestination(icon=ft.Icons.EXPLORE, label="Explore"),
                 ft.NavigationBarDestination(icon=ft.Icons.COMMUTE, label="Commute"),
@@ -88,28 +89,32 @@ class UINutricion(ft.View):
             ]
         )
 
-        self.img_central= ft.Image(
-            src="assets/comidaSaludable.png",
-            width=100,
-            height=100,
-            fit=ft.ImageFit.CONTAIN,
-        )
+        self.image_main = ft.Column(expand=1,
+                               horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                               alignment=ft.alignment.bottom_left,
+                               controls=[
+                                   ft.Image(
+                                       src="./assets/logo_nutricion.png",
+                                       width=200,
+                                       height=200,
+                                   )
+                               ]
+                               )
+
+
 
         self.container_img_central = ft.Container(
                         expand=True,
-                        bgcolor=self.container_color,
-                        border_radius=10,
-                        width=600,
+                        #bgcolor=self.container_color,
+                        #border_radius=10,
+                        #width=600,
                         content=ft.Column(
                             controls=[
-                                self.img_central,
+                                self.image_main,
                             ]
                         ),
-                        visible=True
+                        visible=False
                     )
-
-
-
 
 
         ####Componentes de pacientes  ########
@@ -127,11 +132,9 @@ class UINutricion(ft.View):
         self.data_table = ft.DataTable(
             expand=True,
             border=ft.border.all(2, "green"),
-            # data_row_color=(ft.State),
             bgcolor=ft.Colors.WHITE,
             border_radius=10,
             show_checkbox_column=True,
-            #data_row_max_height=10,
             columns=[
                 ft.DataColumn(ft.Text("ID", color="green", weight="bold"), numeric=True),
                 ft.DataColumn(ft.Text("NOMBRE", color="green", weight="bold")),
@@ -281,6 +284,7 @@ class UINutricion(ft.View):
                 expand=True,
                 border_radius=20,
                 margin=80,
+                bgcolor="#9bf2b5",
                 content=ft.Column(
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     alignment=ft.alignment.center,
@@ -400,7 +404,7 @@ class UINutricion(ft.View):
                 controls=[
                     self.container_table_paciente,
                     self.container_chart,
-                    #self.container_img_central,
+                    self.container_img_central
 
                 ],
             )
@@ -413,44 +417,44 @@ class UINutricion(ft.View):
             offset=ft.transform.Offset(0,0),
             animate_offset= self.animation_style,
             on_click=lambda e: self.change_page(e,1),
-            height=40,
+            height=60,
             content=ft.Row(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
                     ft.Icon(ft.icons.PERSON, color="white"),
-                    ft.Text("PACIENTES",width=120)
+                    ft.Text("PACIENTES",width=120,color=self.color_text_search, size=20,weight=ft.FontWeight.BOLD)
                 ]
             )
         )
         self.option_2=ft.Container(
             padding=10,
-            bgcolor=self.color_navigation_bt,
+            bgcolor=self.color_purple,
             border_radius=15,
             offset=ft.transform.Offset(0,0),
             animate_offset= self.animation_style,
             on_click=lambda e: self.change_page(e,2),
-            height=40,
+            height=60,
             content=ft.Row(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
                     ft.Icon(ft.icons.CALCULATE, color="white"),
-                    ft.Text("CONTROL",width=120)
+                    ft.Text("CONTROL",width=120,color=self.color_text_search, size=20,weight=ft.FontWeight.BOLD)
                 ]
             )
         )
         self.option_reportes_btn=ft.Container(
             padding=10,
-            bgcolor=self.color_navigation_bt,
+            bgcolor=self.color_purple,
             border_radius=15,
             offset=ft.transform.Offset(0,0),
             animate_offset= self.animation_style,
             on_click=lambda e: self.change_page(e,3),
-            height=40,
+            height=60,
             content=ft.Row(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
                     ft.Icon(ft.icons.BOOK, color="white"),
-                    ft.Text("REPORTES",width=120)
+                    ft.Text("REPORTES",width=120, color=self.color_text_search, size=20,weight=ft.FontWeight.BOLD)
                 ]
             )
         )
@@ -483,6 +487,9 @@ class UINutricion(ft.View):
         )
 
 
+    def init(self):
+        self.container_img_central.visible= True
+        self.page.controls.append(self.container_img_central)
     def change_page(self, e, n):
         print("Change_ page")
         if n == 1:
@@ -490,7 +497,9 @@ class UINutricion(ft.View):
             self.option_paciente_btn.offset.x = 0.15
             self.option_2.offset.x = 0
             self.option_reportes_btn.offset.x = 0
-            self.option_paciente_btn.bgcolor = self.color_purple
+            self.option_2.bgcolor = self.color_purple
+            self.option_reportes_btn.bgcolor = self.color_purple
+            self.option_paciente_btn.bgcolor = self.color_navigation_bt
             self.option_paciente_btn.update()
 
             self.container_chart.visible = False
@@ -503,7 +512,9 @@ class UINutricion(ft.View):
             self.option_paciente_btn.offset.x = 0
             self.option_2.offset.x = 0.15
             self.option_reportes_btn.offset.x = 0
-            self.option_2.bgcolor = self.color_purple
+            self.option_paciente_btn.bgcolor = self.color_purple
+            self.option_reportes_btn.bgcolor = self.color_purple
+            self.option_2.bgcolor = self.color_navigation_bt
             self.option_2.update()
         elif n == 3:
             print("Llego al 3")
@@ -511,9 +522,11 @@ class UINutricion(ft.View):
             self.option_2.offset.x = 0
             self.option_paciente_btn.offset.x = 0
             self.option_reportes_btn.offset.x = 0.15
-            self.option_reportes_btn.bgcolor = self.color_purple
+            self.option_reportes_btn.bgcolor = self.color_navigation_bt
             self.option_reportes_btn.update()
 
+            self.option_paciente_btn.bgcolor = self.color_purple
+            self.option_2.bgcolor = self.color_purple
             self.container_table_paciente.visible = False
             self.container_chart.visible = True
 
@@ -545,11 +558,6 @@ class UINutricion(ft.View):
 
 
     ##Functions Graficos
-    def show_data_2(self):
-        self.data_table.rows = []
-        for i in range(len(self.pacientes_data)):
-            print(i)
-
     def badge(icon, size):
         return ft.Container(
             ft.Icon(icon),
