@@ -1,4 +1,4 @@
-﻿id,name,apellidos,edad,genero,Peso
+﻿id,name,apellidos,edad,genero,peso
 1,Juan,Smith,43,M,55
 2,Jaime,Brown,19,M,85
 3,Alicia,Blanco,25,F,75
@@ -8,4 +8,14 @@
 7,Ana,Vazquez,30,F,57
 8,Mario,Morales,45,N,85
 9,Angelica,Hernandez,40,F,60
-10,Fernando,Montes,33,M,78
+10,Fernanda,Murales,38,M,65
+11,Juana,Gonzalez,30,M,85
+12,Jaime,Camil,29,M,85
+13,Anabel,Mujica,26,F,70
+14,Felipe,Martinez,30,M,67
+15,Armando,Sanchez,36,M,110
+16,Tania,Velazquez,27,F,57
+17,Ana Maria,Uscanga,53,F,55
+18,Manuel,Vidal,78,N,85
+19,Cinthya,Mendoza,24,F,56
+20,Adela,Amador,33,M,60

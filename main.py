@@ -42,7 +42,78 @@ class UINutricion(ft.View):
         self.normal_badge_size = 40
         self.hover_badge_size = 50
 
+
+        ##Configuracion paginado table
+        self.rows_per_page = 5  # Número de filas por página
+        self.current_page = 0
+
+
+        page.fonts = {
+            "Kanit": "https://raw.githubusercontent.com/google/fonts/master/ofl/kanit/Kanit-Bold.ttf",
+            "Open Sans": "/fonts/OpenSans-Regular.ttf",
+        }
+
+        #####Componentes Generales ######
+        page.appbar = ft.AppBar(
+            leading=ft.Icon(ft.Icons.FAVORITE_ROUNDED,color=ft.Colors.GREEN_400, size=30),
+            leading_width=40,
+            title=ft.Text("NutriApp",theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM,font_family="Kanit" ),
+            center_title=True,
+            bgcolor=ft.Colors.LIGHT_GREEN_900,
+            actions=[
+                ft.IconButton(ft.Icons.WB_SUNNY_OUTLINED),
+                #ft.IconButton(ft.Icons.FILTER_3),
+                ft.PopupMenuButton(
+                    items=[
+                        ft.PopupMenuItem(text="En construcción"),
+                        ft.PopupMenuItem(),  # divider
+                        ft.PopupMenuItem(
+                            text="Checked item", checked=False,
+                        ),
+                    ]
+                ),
+            ],
+        )
+
+        page.navigation_bar = ft.NavigationBar(
+            bgcolor=ft.Colors.LIGHT_GREEN_900,
+            destinations=[
+                ft.NavigationBarDestination(icon=ft.Icons.EXPLORE, label="Explore"),
+                ft.NavigationBarDestination(icon=ft.Icons.COMMUTE, label="Commute"),
+                ft.NavigationBarDestination(
+                    icon=ft.Icons.BOOKMARK_BORDER,
+                    selected_icon=ft.Icons.BOOKMARK,
+                    label="Explore",
+                ),
+            ]
+        )
+
+        self.img_central= ft.Image(
+            src="assets/comidaSaludable.png",
+            width=100,
+            height=100,
+            fit=ft.ImageFit.CONTAIN,
+        )
+
+        self.container_img_central = ft.Container(
+                        expand=True,
+                        bgcolor=self.container_color,
+                        border_radius=10,
+                        width=600,
+                        content=ft.Column(
+                            controls=[
+                                self.img_central,
+                            ]
+                        ),
+                        visible=True
+                    )
+
+
+
+
+
         ####Componentes de pacientes  ########
+
         ##Componentes de Tabla
         self.search_pacient = ft.TextField(
             label="Buscar",
@@ -60,6 +131,7 @@ class UINutricion(ft.View):
             bgcolor=ft.Colors.WHITE,
             border_radius=10,
             show_checkbox_column=True,
+            #data_row_max_height=10,
             columns=[
                 ft.DataColumn(ft.Text("ID", color="green", weight="bold"), numeric=True),
                 ft.DataColumn(ft.Text("NOMBRE", color="green", weight="bold")),
@@ -74,7 +146,7 @@ class UINutricion(ft.View):
         ## CREACION DE TABLA
         self.table = ft.Container(
             bgcolor="#9bf2b5",
-            border_radius=10,
+            border_radius=0,
             col=8,
             content=ft.Column(
                 controls=[
@@ -135,7 +207,8 @@ class UINutricion(ft.View):
             color=self.color_text_search,
             border_color=self.color_text_search,
             border_radius=50,
-            padding=10,
+            bgcolor=ft.Colors.GREEN_200,
+            padding=20,
             alignment=ft.alignment.center,
             on_change=lambda e: self.dropdown_changed(e),
             options=[
@@ -186,15 +259,20 @@ class UINutricion(ft.View):
         )
 
         self.df_linea = px.data.gapminder().query("continent=='Oceania'")
+        #self.df_linea = self.pacientes_data
         self.fig = px.line(self.df_linea, x="year", y="lifeExp", color="country")
         self.grafico_peso = ft.Container(content=PlotlyChart(self.fig, expand=True),
-                                         visible=False
-                                         )
+                                            width=700,
+                                            visible=False)
 
-        self.data_canada = px.data.gapminder().query("country == 'Canada'")
-        self.fig_barras = px.bar(self.data_canada, x='year', y='pop')
+
+        #self.data_canada = px.data.gapminder().query("country == 'Canada'")
+
+        self.fig_barras = px.bar(self.pacientes_data, x='name', y='edad')
         self.grafico_edades = ft.Container(
             content=(PlotlyChart(self.fig_barras, expand=True)),
+            width=700,
+            alignment=ft.alignment.top_center,
             visible=False
         )
 
@@ -202,6 +280,7 @@ class UINutricion(ft.View):
             ft.Container(
                 expand=True,
                 border_radius=20,
+                margin=80,
                 content=ft.Column(
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     alignment=ft.alignment.center,
@@ -235,6 +314,8 @@ class UINutricion(ft.View):
             expand=True,
             bgcolor=self.container_color,
             content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.alignment.center,
                 controls=[
                     self.head_reportes,
                     self.graficosframe
@@ -271,9 +352,10 @@ class UINutricion(ft.View):
                         bgcolor=self.container_color,
                         #margin=ft.margin.only(left=0, top=150, right=0, bottom=0),
                         #padding=ft.padding.only(left=0, top=100, right=0, bottom=0),
-                        border_radius=20,
+                        border_radius=0,
                         content=ft.Column(
                             controls=[
+                                #self.content_main_image,
                                 self.content_element_table,
                                 self.content_element_reportes
                             ]
@@ -317,7 +399,8 @@ class UINutricion(ft.View):
                 alignment=ft.alignment.center,
                 controls=[
                     self.container_table_paciente,
-                    self.container_chart
+                    self.container_chart,
+                    #self.container_img_central,
 
                 ],
             )
@@ -388,27 +471,16 @@ class UINutricion(ft.View):
         )
 
 
-
-
-
-
-
         self.page.add(
             ft.Row(
                 expand=True,
-                spacing=20,
+                spacing=5,
                 controls=[
                     self.navegation,
                     self.frame,
                 ]
             )
         )
-
-
-        self.switch_control_btns ={
-            1: self.container_table_paciente,
-            2: self.container_chart
-        }
 
 
     def change_page(self, e, n):
@@ -452,6 +524,7 @@ class UINutricion(ft.View):
     ##Functions pacientes
     def show_data(self):
         self.data_table.rows = []
+
         for i in range(len(self.pacientes_data)):
             print(i)
             self.data_table.rows.append(
@@ -467,6 +540,9 @@ class UINutricion(ft.View):
                 )
             )
         self.update()
+
+
+
 
     ##Functions Graficos
     def show_data_2(self):
@@ -513,6 +589,9 @@ class UINutricion(ft.View):
             self.grafico_edades.visible = True
             self.page.controls.append(self.grafico_edades)
         self.page.update()
+
+
+
 
 
 ft.app(target=lambda page:UINutricion(page))
