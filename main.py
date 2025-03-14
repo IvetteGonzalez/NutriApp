@@ -1,21 +1,478 @@
 import flet as ft
 import pandas as pd
+import plotly.express as px
+from flet.plotly_chart import PlotlyChart
 
-def main(page: ft.Page):
-    normal_border = ft.BorderSide(0, ft.Colors.with_opacity(0, ft.Colors.WHITE))
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+class UINutricion(ft.View):
+    def __init__(self, page:ft.Page):
+        super().__init__(route="/")
+        self.page = page
+        self.page.padding = 0
 
-    pacientes_data = pd.read_csv("data/pacientes.csv")
-    pacientes_age = pd.read_csv("data/pacientes.csv",usecols=["id","edad"])
+        ##Define Colors
+        self.bg_color = "#1fed6a"
+        self.container_color = "#d0f5e5"
+        self.color_purple = ft.Colors.TEAL_ACCENT_700
+        self.color_navigation_bt = ft.Colors.LIGHT_GREEN_900
+        self.color_text_search = "#0c5c39"
+        self.color_text_table="#204032"
 
-    df_pacientes=pd.DataFrame(pacientes_data)
-    df_age = pd.DataFrame(pacientes_age)
 
-    normal_badge_size = 40
-    normal_title_style = ft.TextStyle(
-        size=12, color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD
-    )
+        #Settings Colors
+        self.page.bgcolor = self.bg_color
+        self.animation_style = ft.animation.Animation(500, ft.AnimationCurve.EASE_IN_TO_LINEAR)
+
+        # Variables
+        self.pacientes_data = pd.DataFrame(pd.read_csv("data/pacientes.csv"))
+
+        ##Config chart
+        self.normal_radius = 100
+        self.hover_radius = 110
+        self.normal_title_style = ft.TextStyle(
+            size=12,
+            color=ft.Colors.WHITE,
+            weight=ft.FontWeight.BOLD
+        )
+        self.hover_title_style = ft.TextStyle(
+            size=16,
+            color=ft.Colors.WHITE,
+            weight=ft.FontWeight.BOLD,
+            shadow=ft.BoxShadow(blur_radius=2, color=ft.Colors.BLACK54),
+        )
+        self.normal_badge_size = 40
+        self.hover_badge_size = 50
+
+        ####Componentes de pacientes  ########
+        ##Componentes de Tabla
+        self.search_pacient = ft.TextField(
+            label="Buscar",
+            suffix_icon=ft.icons.SEARCH,
+            border=ft.InputBorder.UNDERLINE,
+            border_color="ft.Colors.LIGHT_GREEN_900",
+            label_style=ft.TextStyle(color=self.color_text_search),
+            width=400
+        )
+
+        self.data_table = ft.DataTable(
+            expand=True,
+            border=ft.border.all(2, "green"),
+            # data_row_color=(ft.State),
+            bgcolor=ft.Colors.WHITE,
+            border_radius=10,
+            show_checkbox_column=True,
+            columns=[
+                ft.DataColumn(ft.Text("ID", color="green", weight="bold"), numeric=True),
+                ft.DataColumn(ft.Text("NOMBRE", color="green", weight="bold")),
+                ft.DataColumn(ft.Text("APELLIDOS", color="green", weight="bold")),
+                ft.DataColumn(ft.Text("EDAD", color="green", weight="bold"), numeric=True),
+                ft.DataColumn(ft.Text("GENERO", color="green", weight="bold")),
+                ft.DataColumn(ft.Text("PESO", color="green", weight="bold")),
+            ]
+        )
+        self.show_data()
+
+        ## CREACION DE TABLA
+        self.table = ft.Container(
+            bgcolor="#9bf2b5",
+            border_radius=10,
+            col=8,
+            content=ft.Column(
+                controls=[
+                    ft.Container(
+                        padding=30,
+                        content=ft.Row(
+                            controls=[
+                                ft.Text(" ", width=200),
+                                self.search_pacient,
+                                ft.Icon(ft.icons.PERSON, color="white")
+                            ],
+                            alignment=ft.alignment.top_center
+                        )
+                    ),
+                    ft.Column(
+                        expand=True,
+                        scroll=ft.ScrollMode.AUTO,
+                        controls=[
+                            self.data_table,
+                        ]
+                    )
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.alignment.bottom_left,
+
+            ),
+        )
+
+        ## Componentes Padre Paciente
+        self.content_element_table = ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            content=ft.Stack(
+                controls=[
+                    self.table
+                ]
+            ),
+            visible=False
+        )
+        ###  FIN COMPONENTES PACIENTE  ####
+
+        #### COMPONENTES REPORTES  ######
+
+        ##Componentes de Tabla
+        self.search_pacient = ft.TextField(
+            label="Buscar",
+            suffix_icon=ft.icons.SEARCH,
+            border=ft.InputBorder.UNDERLINE,
+            border_color="white",
+            label_style=ft.TextStyle(color="white"),
+            width=400
+        )
+
+        self.select_reporte = ft.DropdownM2(
+            label="Reportes",
+            hint_text="Selecciona el reporte deseado",
+            width=600,
+            color=self.color_text_search,
+            border_color=self.color_text_search,
+            border_radius=50,
+            padding=10,
+            alignment=ft.alignment.center,
+            on_change=lambda e: self.dropdown_changed(e),
+            options=[
+                ft.dropdownm2.Option(1, "Reporte por Género",),
+                ft.dropdownm2.Option(2, "Reporte Movimiento de peso por paciente"),
+                ft.dropdownm2.Option(3, "Reporte por edades"),
+            ],
+            autofocus=True,
+        )
+
+        self.grafico_genero = ft.Container(
+            content=ft.PieChart(
+                sections=[
+                    ft.PieChartSection(
+                        40,
+                        title="40%",
+                        title_style=self.normal_title_style,
+                        color=ft.Colors.BLUE,
+                        radius=self.normal_radius,
+                        # badge=self.badge(ft.Icons.AC_UNIT,self.normal_badge_size),
+                        badge_position=0.98
+                    ),
+                    ft.PieChartSection(
+                        30,
+                        title="30%",
+                        title_style=self.normal_title_style,
+                        color=ft.Colors.YELLOW,
+                        radius=self.normal_radius,
+                        # badge=self.badge(ft.Icons.AC_UNIT,self.normal_badge_size),
+                        badge_position=0.98
+                    ),
+                    ft.PieChartSection(
+                        15,
+                        title="15%",
+                        title_style=self.normal_title_style,
+                        color=ft.Colors.PURPLE,
+                        radius=self.normal_radius,
+                        # badge=self.badge(ft.Icons.AC_UNIT, self.normal_badge_size),
+                        badge_position=0.98
+                    )
+                ],
+                sections_space=0,
+                center_space_radius=0,
+                # on_chart_event=on_chart_event,
+                expand=True,
+            ),
+            visible=False
+        )
+
+        self.df_linea = px.data.gapminder().query("continent=='Oceania'")
+        self.fig = px.line(self.df_linea, x="year", y="lifeExp", color="country")
+        self.grafico_peso = ft.Container(content=PlotlyChart(self.fig, expand=True),
+                                         visible=False
+                                         )
+
+        self.data_canada = px.data.gapminder().query("country == 'Canada'")
+        self.fig_barras = px.bar(self.data_canada, x='year', y='pop')
+        self.grafico_edades = ft.Container(
+            content=(PlotlyChart(self.fig_barras, expand=True)),
+            visible=False
+        )
+
+        self.head_reportes = ft.Container(
+            ft.Container(
+                expand=True,
+                border_radius=20,
+                content=ft.Column(
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.alignment.center,
+                    controls=[
+                        ft.Text("REPORTES", theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM, color=self.color_text_search),
+                        ft.Text("Seleccione el reporte deseado:",
+                                theme_style=ft.TextThemeStyle.HEADLINE_MEDIUM, color=self.color_text_search),
+                        ft.Divider(height=2, color="green"),
+
+                        self.select_reporte,
+                    ],
+                )
+            )
+
+        )
+
+        self.graficosframe = ft.Container(
+            expand=True,
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.alignment.center,
+                controls=[
+                    self.grafico_genero,
+                    self.grafico_peso,
+                    self.grafico_edades
+                ],
+            )
+        )
+
+        self.content_element_chart = ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            content=ft.Column(
+                controls=[
+                    self.head_reportes,
+                    self.graficosframe
+                ]
+            )
+        )
+
+
+
+
+        ## Componentes Padre Reportes
+        self.content_element_reportes= ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            content=ft.Stack(
+                controls=[
+                    self.table
+                ]
+            ),
+            visible=False
+        )
+
+        ####--------------------------------------
+        #Config elementos
+        self.container_table_paciente = ft.Container(
+            expand=True,
+            bgcolor = self.container_color,
+            offset= ft.transform.Offset(0,0),
+            animate_offset= self.animation_style,
+            content=ft.Row(
+                controls=[
+                    ft.Container(
+                        expand=True,
+                        bgcolor=self.container_color,
+                        #margin=ft.margin.only(left=0, top=150, right=0, bottom=0),
+                        #padding=ft.padding.only(left=0, top=100, right=0, bottom=0),
+                        border_radius=20,
+                        content=ft.Column(
+                            controls=[
+                                self.content_element_table,
+                                self.content_element_reportes
+                            ]
+                        )
+                    ),
+
+            ])
+        )
+
+        self.container_chart = ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            content=ft.Container(
+                        #expand=True,
+                        bgcolor=self.container_color,
+                        # margin=ft.margin.only(left=0, top=150, right=0, bottom=0),
+                        # padding=ft.padding.only(left=0, top=100, right=0, bottom=0),
+                        border_radius=20,
+                        content=ft.Column(
+                            controls=[
+                                self.content_element_chart
+                            ]
+                        )
+                    ),
+            visible=False
+
+        )
+
+        self.container_3 = ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            offset=ft.transform.Offset(0, 0),
+            animate_offset=self.animation_style,
+
+        )
+
+        self.frame = ft.Container(
+            expand=True,
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.alignment.center,
+                controls=[
+                    self.container_table_paciente,
+                    self.container_chart
+
+                ],
+            )
+        )
+
+        self.option_paciente_btn = ft.Container(
+            padding=10,
+            bgcolor=self.color_purple,
+            border_radius=15,
+            offset=ft.transform.Offset(0,0),
+            animate_offset= self.animation_style,
+            on_click=lambda e: self.change_page(e,1),
+            height=40,
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Icon(ft.icons.PERSON, color="white"),
+                    ft.Text("PACIENTES",width=120)
+                ]
+            )
+        )
+        self.option_2=ft.Container(
+            padding=10,
+            bgcolor=self.color_navigation_bt,
+            border_radius=15,
+            offset=ft.transform.Offset(0,0),
+            animate_offset= self.animation_style,
+            on_click=lambda e: self.change_page(e,2),
+            height=40,
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Icon(ft.icons.CALCULATE, color="white"),
+                    ft.Text("CONTROL",width=120)
+                ]
+            )
+        )
+        self.option_reportes_btn=ft.Container(
+            padding=10,
+            bgcolor=self.color_navigation_bt,
+            border_radius=15,
+            offset=ft.transform.Offset(0,0),
+            animate_offset= self.animation_style,
+            on_click=lambda e: self.change_page(e,3),
+            height=40,
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Icon(ft.icons.BOOK, color="white"),
+                    ft.Text("REPORTES",width=120)
+                ]
+            )
+        )
+
+        self.navegation=ft.Container(
+            padding=20,
+            bgcolor=self.container_color,
+            animate_size=self.animation_style,
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    self.option_paciente_btn,
+                    self.option_2,
+                    self.option_reportes_btn,
+                ]
+            )
+        )
+
+
+
+
+
+
+
+        self.page.add(
+            ft.Row(
+                expand=True,
+                spacing=20,
+                controls=[
+                    self.navegation,
+                    self.frame,
+                ]
+            )
+        )
+
+
+        self.switch_control_btns ={
+            1: self.container_table_paciente,
+            2: self.container_chart
+        }
+
+
+    def change_page(self, e, n):
+        print("Change_ page")
+        if n == 1:
+            print("Llego al 1")
+            self.option_paciente_btn.offset.x = 0.15
+            self.option_2.offset.x = 0
+            self.option_reportes_btn.offset.x = 0
+            self.option_paciente_btn.bgcolor = self.color_purple
+            self.option_paciente_btn.update()
+
+            self.container_chart.visible = False
+            self.container_table_paciente.visible = True
+            self.content_element_table.visible = True
+            #self.page.controls.append(self.content_element_table)
+            self.page.controls.append(self.container_table_paciente)
+            self.page.update()
+        elif n == 2:
+            self.option_paciente_btn.offset.x = 0
+            self.option_2.offset.x = 0.15
+            self.option_reportes_btn.offset.x = 0
+            self.option_2.bgcolor = self.color_purple
+            self.option_2.update()
+        elif n == 3:
+            print("Llego al 3")
+            self.option_paciente_btn.offset.x = 0
+            self.option_2.offset.x = 0
+            self.option_paciente_btn.offset.x = 0
+            self.option_reportes_btn.offset.x = 0.15
+            self.option_reportes_btn.bgcolor = self.color_purple
+            self.option_reportes_btn.update()
+
+            self.container_table_paciente.visible = False
+            self.container_chart.visible = True
+
+            self.page.controls.append(self.container_chart)
+            self.page.update()
+        self.page.update()
+
+    ##Functions pacientes
+    def show_data(self):
+        self.data_table.rows = []
+        for i in range(len(self.pacientes_data)):
+            print(i)
+            self.data_table.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(str(self.pacientes_data.iloc[i]["id"]),color=self.color_text_table)),
+                        ft.DataCell(ft.Text(self.pacientes_data.iloc[i]['name'],color=self.color_text_table)),
+                        ft.DataCell(ft.Text(self.pacientes_data.iloc[i]['apellidos'],color=self.color_text_table)),
+                        ft.DataCell(ft.Text(str(self.pacientes_data.iloc[i]['edad']),color=self.color_text_table)),
+                        ft.DataCell(ft.Text(self.pacientes_data.iloc[i]['genero'],color=self.color_text_table)),
+                        ft.DataCell(ft.Text(self.pacientes_data.iloc[i]['peso'],color=self.color_text_table)),
+                    ]
+                )
+            )
+        self.update()
+
+    ##Functions Graficos
+    def show_data_2(self):
+        self.data_table.rows = []
+        for i in range(len(self.pacientes_data)):
+            print(i)
 
     def badge(icon, size):
         return ft.Container(
@@ -27,488 +484,35 @@ def main(page: ft.Page):
             bgcolor=ft.Colors.WHITE,
         )
 
+    def badgefunction(icon, size):
+        return ft.Container(
+            ft.Icon(icon),
+            width=size,
+            height=size,
+            border=ft.border.all(1, ft.Colors.BROWN),
+            border_radius=size / 2,
+            bgcolor=ft.Colors.WHITE,
+        )
 
 
-    page.appbar = ft.AppBar(
-        leading=ft.Icon(ft.Icons.FAVORITE),
-        leading_width=40,
-        title=ft.Text("NutriApp"),
-        center_title=True,
-        bgcolor=ft.Colors.GREEN,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN),
-        ],
-    )
-
-    t = ft.Tabs(
-        selected_index=1,
-        animation_duration=300,
-        tabs=[
-            ft.Tab(
-                text="Consulta Genero",
-                content=ft.ResponsiveRow(
-            [
-
-                ft.Text("Genero"),
-                ft.Row([
-
-                    ft.Container(
-                        content=ft.Column(
-                            [
-                                ft.CupertinoCheckbox(label="Hombre", value=True),
-                                ft.CupertinoCheckbox(label="Mujer", value=True),
-                                ft.CupertinoCheckbox(label="No especificado", value=True),
-
-                            ]
-                        ),
-                    ),
-
-                        ft.PieChart(
-                            sections=[
-                                ft.PieChartSection(
-                                    5,
-                                    color=ft.colors.BLUE,
-                                    radius=80,
-                                    border_side=normal_border,
-                                    title="5",
-                                    title_style=normal_title_style,
-                                    badge=badge(ft.Icons.MAN, normal_badge_size),
-                                    badge_position=0.98,
-                                ),
-                                ft.PieChartSection(
-                                    4,
-                                    color=ft.colors.PINK,
-                                    radius=80,
-                                    border_side=normal_border,
-                                    title="4",
-                                    badge=badge(ft.Icons.WOMAN, normal_badge_size),
-                                    badge_position=0.98,
-                                ),
-                                ft.PieChartSection(
-                                    2,
-                                    color=ft.colors.GREEN,
-                                    radius=80,
-                                    border_side=normal_border,
-                                    title="1",
-                                    badge=badge(ft.Icons.QUIZ, normal_badge_size),
-                                    badge_position=0.98,
-                                )
-                            ],
-                            sections_space=1,
-                            center_space_radius=0,
-                            expand=True
-                        ),
-
-                ]),
-            ]),
-            ),
-
-            ft.Tab(
-                text="Estadistica",
-                content=ft.ResponsiveRow(
-                        [
-                            ft.Container(
-                                content=ft.DataTable(
-                                    columns=[
-                                        ft.DataColumn(ft.Text("ID Paciente")),
-                                        ft.DataColumn(ft.Text("Edad"), numeric=True),
-                                    ],
-                                    rows=[
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("1")),
-                                                ft.DataCell(ft.Text("43")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("2")),
-                                                ft.DataCell(ft.Text("19")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("3")),
-                                                ft.DataCell(ft.Text("25")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("4")),
-                                                ft.DataCell(ft.Text("28")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("5")),
-                                                ft.DataCell(ft.Text("38")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("6")),
-                                                ft.DataCell(ft.Text("25")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("7")),
-                                                ft.DataCell(ft.Text("30")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("8")),
-                                                ft.DataCell(ft.Text("45")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("9")),
-                                                ft.DataCell(ft.Text("40")),
-                                            ],
-                                        ),
-                                        ft.DataRow(
-                                            cells=[
-                                                ft.DataCell(ft.Text("10")),
-                                                ft.DataCell(ft.Text("33")),
-                                            ],
-                                        ),
-                                    ],
-                                ),
-                                padding=5,
-                                bgcolor=ft.Colors.PRIMARY_CONTAINER,
-                                col={"sm": 6, "md": 4, "xl": 2},
-
-                            ),
-
-                            ft.Container(
-                                content=ft.DataTable(
-                                columns=[
-                                    ft.DataColumn(ft.Text("Operación")),
-                                    ft.DataColumn(ft.Text("Resultado")),
-                                ],
-                                rows=[
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("Rango")),
-                                            ft.DataCell(ft.Text("26")),
-
-                                        ],
-                                    ),
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("Media")),
-                                            ft.DataCell(ft.Text("32.6")),
-                                        ],
-                                    ),
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("Mediana")),
-                                            ft.DataCell(ft.Text("33")),
-                                        ],
-                                    ),
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("Moda")),
-                                            ft.DataCell(ft.Text("25")),
-                                        ],
-                                    ),
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("Varianza")),
-                                            ft.DataCell(ft.Text("67.44")),
-                                        ],
-                                    ),
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("Desviación")),
-                                            ft.DataCell(ft.Text("8.2")),
-                                        ],
-                                    ),
-                                    ft.DataRow(
-                                        cells=[
-                                            ft.DataCell(ft.Text("CV")),
-                                            ft.DataCell(ft.Text("0.25")),
-                                        ],
-                                    ),
-                                ],),
-                                padding=5,
-                                bgcolor=ft.Colors.TERTIARY_CONTAINER,
-                                col={"sm": 6, "md": 6, "xl": 3},
-                            ),
-                            ft.Container(
-                                content=ft.BarChart(
-                                bar_groups=[
-                                    ft.BarChartGroup(
-                                        x=0,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.AMBER,
-                                                tooltip="19",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=1,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=2,
-                                                width=40,
-                                                color=ft.Colors.BLUE,
-                                                tooltip="25",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=2,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.RED,
-                                                tooltip="28",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=3,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.GREEN,
-                                                tooltip="30",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=4,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.PINK,
-                                                tooltip="38",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=5,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.BLUE,
-                                                tooltip="40",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=6,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.RED,
-                                                tooltip="43",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                    ft.BarChartGroup(
-                                        x=7,
-                                        bar_rods=[
-                                            ft.BarChartRod(
-                                                from_y=0,
-                                                to_y=1,
-                                                width=40,
-                                                color=ft.Colors.GREEN,
-                                                tooltip="45",
-                                                border_radius=0,
-                                            ),
-                                        ],
-                                    ),
-                                ],
-                                border=ft.border.all(1, ft.Colors.GREY_400),
-                                left_axis=ft.ChartAxis(
-                                    labels_size=40, title=ft.Text("Cantidad"), title_size=40
-                                ),
-                                bottom_axis=ft.ChartAxis(
-                                    labels=[
-                                        ft.ChartAxisLabel(
-                                            value=0, label=ft.Container(ft.Text("19"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=1, label=ft.Container(ft.Text("25"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=2, label=ft.Container(ft.Text("28"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=3, label=ft.Container(ft.Text("30"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=4, label=ft.Container(ft.Text("38"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=5, label=ft.Container(ft.Text("40"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=6, label=ft.Container(ft.Text("43"), padding=10)
-                                        ),
-                                        ft.ChartAxisLabel(
-                                            value=7, label=ft.Container(ft.Text("45"), padding=10)
-                                        ),
-                                    ],
-                                    labels_size=40,
-                                ),
-                                horizontal_grid_lines=ft.ChartGridLines(
-                                    color=ft.Colors.GREY_300, width=1, dash_pattern=[3, 3]
-                                ),
-                                tooltip_bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.GREY_300),
-                                max_y=5,
-                                interactive=True,
-                                expand=True,
-
-                            ),
-                                padding=5,
-                                bgcolor=ft.Colors.SECONDARY_CONTAINER,
-                                col={"sm": 6, "md": 4, "xl": 7},
-                            ),
-                        ],
-                        ),
-            ),
+    def dropdown_changed(self,e):
+        print("on change en construcción")
+        print(self.select_reporte.value)
+        self.grafico_genero.visible = False
+        self.grafico_edades.visible = False
+        self.grafico_peso.visible = False
 
 
-
-            ft.Tab(
-                text= "Todos List",
-                icon=ft.Icons.TABLET,
-                content=ft.Container(
-                    ft.DataTable(
-                        columns=[
-                            ft.DataColumn(ft.Text("Name")),
-                            ft.DataColumn(ft.Text("Apellidos")),
-                            ft.DataColumn(ft.Text("Edad"), numeric=True),
-                            ft.DataColumn(ft.Text("Genero")),
-                            ft.DataColumn(ft.Text("Peso"), numeric=True),
-                        ],
-                        rows=[
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Juan")),
-                                    ft.DataCell(ft.Text("Smith")),
-                                    ft.DataCell(ft.Text("43")),
-                                    ft.DataCell(ft.Text("M")),
-                                    ft.DataCell(ft.Text("55")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Jaime")),
-                                    ft.DataCell(ft.Text("Brown")),
-                                    ft.DataCell(ft.Text("19")),
-                                    ft.DataCell(ft.Text("M")),
-                                    ft.DataCell(ft.Text("85")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Alicia")),
-                                    ft.DataCell(ft.Text("Blanco")),
-                                    ft.DataCell(ft.Text("25")),
-                                    ft.DataCell(ft.Text("F")),
-                                    ft.DataCell(ft.Text("75")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Juan")),
-                                    ft.DataCell(ft.Text("Martinez")),
-                                    ft.DataCell(ft.Text("28")),
-                                    ft.DataCell(ft.Text("M")),
-                                    ft.DataCell(ft.Text("67")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Mario")),
-                                    ft.DataCell(ft.Text("Diaz")),
-                                    ft.DataCell(ft.Text("38")),
-                                    ft.DataCell(ft.Text("M")),
-                                    ft.DataCell(ft.Text("100")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Karla")),
-                                    ft.DataCell(ft.Text("Montes")),
-                                    ft.DataCell(ft.Text("25")),
-                                    ft.DataCell(ft.Text("F")),
-                                    ft.DataCell(ft.Text("55")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Ana")),
-                                    ft.DataCell(ft.Text("Vazquez")),
-                                    ft.DataCell(ft.Text("30")),
-                                    ft.DataCell(ft.Text("F")),
-                                    ft.DataCell(ft.Text("57")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Mario")),
-                                    ft.DataCell(ft.Text("Morales")),
-                                    ft.DataCell(ft.Text("45")),
-                                    ft.DataCell(ft.Text("N")),
-                                    ft.DataCell(ft.Text("85")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Angelica")),
-                                    ft.DataCell(ft.Text("Hernandez")),
-                                    ft.DataCell(ft.Text("40")),
-                                    ft.DataCell(ft.Text("F")),
-                                    ft.DataCell(ft.Text("60")),
-                                ],
-                            ),
-                            ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text("Fernando")),
-                                    ft.DataCell(ft.Text("Montes")),
-                                    ft.DataCell(ft.Text("33")),
-                                    ft.DataCell(ft.Text("M")),
-                                    ft.DataCell(ft.Text("78")),
-                                ],
-                            ),
-                        ],
-                    ),
-                ),
-            ),
-        ],
-        expand=1,
-    )
-
-    page.add(t)
+        if self.select_reporte.value == "1":
+            self.grafico_genero.visible = True
+            self.page.controls.append(self.grafico_genero)
+        elif self.select_reporte.value == "2":
+            self.grafico_peso.visible = True
+            self.page.controls.append(self.grafico_peso)
+        elif self.select_reporte.value == "3":
+            self.grafico_edades.visible = True
+            self.page.controls.append(self.grafico_edades)
+        self.page.update()
 
 
-ft.app(main)
+ft.app(target=lambda page:UINutricion(page))
