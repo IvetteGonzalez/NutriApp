@@ -1,0 +1,21 @@
+﻿id,name,apellidos,edad,genero,peso,ejercicio
+1,Juan,Smith,43,M,55,1
+2,Jaime,Brown,19,M,85,0
+3,Alicia,Blanco,25,F,75,1
+4,Juan,Martinez,28,M,67,1
+5,Mario,Diaz,38,M,100,1
+6,Karla,Montes,25,F,55,1
+7,Ana,Vazquez,30,F,57,1
+8,Mario,Morales,45,N,85,0
+9,Angelica,Hernandez,40,F,60,1
+10,Fernanda,Murales,38,M,65,1
+11,Juana,Gonzalez,30,M,85,1
+12,Jaime,Camil,29,M,85,0
+13,Anabel,Mujica,26,F,70,1
+14,Felipe,Martinez,30,M,67,0
+15,Armando,Sanchez,36,M,110,0
+16,Tania,Velazquez,27,F,57,1
+17,Ana Maria,Uscanga,53,F,55,1
+18,Manuel,Vidal,78,N,85,0
+19,Cinthya,Mendoza,24,F,56,1
+20,Adela,Amador,33,M,60,1

@@ -5,6 +5,7 @@ from components.chart_pie import MyChart_pie
 from components.chart_line import MyChart_line
 from components.chart_barras import MyChart_barras
 from components.registros import MyForm
+from components.arbol import MyTree
 
 
 class UINutricion(ft.View):
@@ -29,6 +30,7 @@ class UINutricion(ft.View):
 
         self.pacientes_data = pd.DataFrame(pd.read_csv("data/pacientes.csv"))
         self.pacientes_data_peso = pd.DataFrame(pd.read_csv("data/pacientes_peso_mensual.csv"))
+        self.pacientes_data_ejercicio = pd.read_csv("data/pacientes_ejercicio.csv")
 
 
         # Componentes Generales #
@@ -82,7 +84,6 @@ class UINutricion(ft.View):
         # FIN COMPONENTES TABLA--------------------------------
 
         # Componentes de GRAFICOS
-
         self.chart_pie = MyChart_pie(data=self.pacientes_data)
         self.chart_line = MyChart_line(data=self.pacientes_data_peso)
         self.chart_barras = MyChart_barras(data=self.pacientes_data)
@@ -130,6 +131,7 @@ class UINutricion(ft.View):
             )
         )
 
+        # Pantalla de reportes
         self.content_element_chart = ft.Container(
             expand=True,
             bgcolor=ft.Colors.WHITE,
@@ -166,7 +168,7 @@ class UINutricion(ft.View):
         self.form_paciente = MyForm()
         self.form_paciente.visible = False
 
-        self.registro_container= ft.Container(
+        self.registro_container = ft.Container(
             expand=True,
             bgcolor=ft.Colors.WHITE,
             #padding=100,
@@ -179,9 +181,19 @@ class UINutricion(ft.View):
                 ]
             ),
             visible=True
-
         )
 
+        # Contenedor de árbol
+        self.content_tree = ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            content=ft.Stack(
+                controls=[
+                    MyTree(self.pacientes_data_ejercicio)
+                ]
+            ),
+            visible=False
+        )
 
 
         self.frame = ft.Container(
@@ -192,8 +204,8 @@ class UINutricion(ft.View):
                 controls=[
                     self.content_element_table,
                     self.container_chart,
-                   # self.container_reg_new
-                    self.registro_container
+                    self.registro_container,
+                    self.content_tree
                 ],
             )
         )
@@ -263,7 +275,7 @@ class UINutricion(ft.View):
             )
         )
 
-        # boton Reportes-Graficas  3
+        # boton Inbody  4
         self.option_inbody_btn = ft.Container(
             padding=10,
             bgcolor=self.color_purple,
@@ -285,6 +297,28 @@ class UINutricion(ft.View):
             )
         )
 
+        # árbol 5
+        self.option_tree_btn = ft.Container(
+            padding=10,
+            bgcolor=self.color_purple,
+            border_radius=15,
+            offset=ft.transform.Offset(0, 0),
+            animate_offset=self.animation_style,
+            on_click=lambda e: self.change_page(e, 5),
+            height=60,
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Icon(ft.icons.ACCOUNT_TREE, color="white"),
+                    ft.Text("Validación",
+                            width=120,
+                            color=self.color_text_search,
+                            size=18,
+                            weight=ft.FontWeight.BOLD)
+                ]
+            )
+        )
+
         self.navegation = ft.Container(
             padding=20,
             bgcolor=self.container_color,
@@ -296,7 +330,8 @@ class UINutricion(ft.View):
                     self.option_paciente_btn,
                     self.option_registro_btn,
                     self.option_reportes_btn,
-                    self.option_inbody_btn
+                    self.option_inbody_btn,
+                    self.option_tree_btn
                 ]
             )
         )
@@ -318,64 +353,56 @@ class UINutricion(ft.View):
         self.content_element_table.visible = False
         self.container_chart.visible = False
         self.registro_container.visible = False
+        self.content_tree.visible = False
+
+        self.option_paciente_btn.offset.x = 0
+        self.option_registro_btn.offset.x = 0
+        self.option_reportes_btn.offset.x = 0
+        self.option_inbody_btn.offset.x = 0
+        self.option_tree_btn.offset.x = 0
+
+        self.option_paciente_btn.bgcolor = self.color_purple
+        self.option_registro_btn.bgcolor = self.color_purple
+        self.option_reportes_btn.bgcolor = self.color_purple
+        self.option_inbody_btn.bgcolor = self.color_purple
+        self.option_tree_btn.bgcolor = self.color_purple
 
         if n == 1:
             print("Llego al 1")
             self.option_paciente_btn.offset.x = 0.15
-            self.option_registro_btn.offset.x = 0
-            self.option_reportes_btn.offset.x = 0
-            self.option_registro_btn.bgcolor = self.color_purple
-            self.option_reportes_btn.bgcolor = self.color_purple
             self.option_paciente_btn.bgcolor = self.color_navigation_bt
             self.option_paciente_btn.update()
-
             self.content_element_table.visible = True
             self.page.controls.append(self.content_element_table)
-            #self.page.update()
         elif n == 2:
             print("Llego al 2")
             self.option_registro_btn.offset.x = 0.15
             self.option_registro_btn.bgcolor = self.color_navigation_bt
-            self.option_paciente_btn.offset.x = 0
-            self.option_reportes_btn.offset.x = 0
             self.option_registro_btn.update()
-
-            self.option_reportes_btn.bgcolor = self.color_purple
-            self.option_paciente_btn.bgcolor = self.color_purple
-
             self.form_paciente.visible = True
             self.registro_container.visible = True
             self.page.controls.append(self.registro_container)
         elif n == 3:
             print("Llego al 3")
-            self.option_paciente_btn.offset.x = 0
-            self.option_reportes_btn.bgcolor = self.color_navigation_bt
-            self.option_registro_btn.offset.x = 0
             self.option_reportes_btn.offset.x = 0.15
-
+            self.option_reportes_btn.bgcolor = self.color_navigation_bt
             self.option_reportes_btn.update()
-
-            self.option_paciente_btn.bgcolor = self.color_purple
-            self.option_registro_btn.bgcolor = self.color_purple
-
             self.container_chart.visible = True
             self.page.controls.append(self.container_chart)
-            #self.page.update()
         elif n == 4:
             print("Llego al 4")
-            self.option_paciente_btn.offset.x = 0
-            self.option_reportes_btn.bgcolor = self.color_navigation_bt
-            self.option_registro_btn.offset.x = 0
-            self.option_reportes_btn.offset.x = 0.15
-
-            self.option_reportes_btn.update()
-
-            self.option_paciente_btn.bgcolor = self.color_purple
-            self.option_registro_btn.bgcolor = self.color_purple
-
-            self.container_chart.visible = True
-            self.page.controls.append(self.container_chart)
-            #self.page.update()
+            self.option_inbody_btn.bgcolor = self.color_navigation_bt
+            self.option_inbody_btn.offset.x = 0.15
+            self.option_inbody_btn.update()
+            #self.container_chart.visible = True
+            #self.page.controls.append(self.container_chart)
+        elif n == 5:
+            print("Llego al 5")
+            self.option_tree_btn.offset.x = 0.15
+            self.option_tree_btn.bgcolor = self.color_navigation_bt
+            self.option_tree_btn.update()
+            self.content_tree.visible = True
+            self.page.controls.append(self.content_tree)
         self.page.update()
 
     def dropdown_changed(self,e):

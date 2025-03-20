@@ -16,12 +16,9 @@ class MyChart_pie(ft.Container):
             weight=ft.FontWeight.BOLD
         )
 
-        print(data["genero"])
-        new_data =pd.DataFrame(data["genero"])
         hombre = (data["genero"] == "M").sum()
         mujer = (data["genero"] == "F").sum()
         na = (data["genero"] == "N").sum()
-        print("H",hombre)
 
         self.grafico_pie = ft.Container(
             content=ft.PieChart(
