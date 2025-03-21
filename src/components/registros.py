@@ -12,24 +12,24 @@ class MyForm(ft.Container):
             ft.Column(
                 controls=[
                     ft.TextField(
-                        label="Name",
+                        label="Nombre Completo",
                         autofill_hints=ft.AutofillHint.NAME,
                     ),
                     ft.TextField(
-                        label="Email",
-                        autofill_hints=[ft.AutofillHint.EMAIL],
+                        label="Edad",
+                        autofill_hints=[ft.AutofillHint.BIRTHDAY],
                     ),
                     ft.TextField(
-                        label="Phone Number",
-                        autofill_hints=[ft.AutofillHint.TELEPHONE_NUMBER],
+                        label="Genero",
+                        autofill_hints=[ft.AutofillHint.GENDER],
                     ),
                     ft.TextField(
-                        label="Street Address",
-                        autofill_hints=ft.AutofillHint.FULL_STREET_ADDRESS,
+                        label="Peso (kg)",
+                        autofill_hints=ft.AutofillHint.TRANSACTION_AMOUNT,
                     ),
                     ft.TextField(
-                        label="Postal Code",
-                        autofill_hints=ft.AutofillHint.POSTAL_CODE,
+                        label="Altura (m)",
+                        autofill_hints=ft.AutofillHint.TRANSACTION_AMOUNT,
                     ),
                 ]
             )

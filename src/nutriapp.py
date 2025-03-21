@@ -6,6 +6,7 @@ from components.chart_line import MyChart_line
 from components.chart_barras import MyChart_barras
 from components.registros import MyForm
 from components.arbol import MyTree
+from components.add_registros import AddRegistros
 
 
 class UINutricion(ft.View):
@@ -195,6 +196,18 @@ class UINutricion(ft.View):
             visible=False
         )
 
+        # Contenedor de New registro
+        self.content_AddReg = ft.Container(
+            expand=True,
+            bgcolor=self.container_color,
+            content=ft.Stack(
+                controls=[
+                    AddRegistros()
+                ]
+            ),
+            visible=False
+        )
+
 
         self.frame = ft.Container(
             expand=True,
@@ -204,8 +217,9 @@ class UINutricion(ft.View):
                 controls=[
                     self.content_element_table,
                     self.container_chart,
-                    self.registro_container,
-                    self.content_tree
+                    #self.registro_container,
+                    self.content_tree,
+                    self.content_AddReg
                 ],
             )
         )
@@ -352,7 +366,8 @@ class UINutricion(ft.View):
         print("Change_ page")
         self.content_element_table.visible = False
         self.container_chart.visible = False
-        self.registro_container.visible = False
+        #self.registro_container.visible = False
+        self.content_AddReg.visible= False
         self.content_tree.visible = False
 
         self.option_paciente_btn.offset.x = 0
@@ -380,8 +395,10 @@ class UINutricion(ft.View):
             self.option_registro_btn.bgcolor = self.color_navigation_bt
             self.option_registro_btn.update()
             self.form_paciente.visible = True
-            self.registro_container.visible = True
-            self.page.controls.append(self.registro_container)
+            #self.registro_container.visible = True
+            #self.page.controls.append(self.registro_container)
+            self.content_AddReg.visible =True
+            self.page.controls.append(self.content_AddReg)
         elif n == 3:
             print("Llego al 3")
             self.option_reportes_btn.offset.x = 0.15
