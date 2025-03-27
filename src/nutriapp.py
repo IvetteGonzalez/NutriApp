@@ -11,7 +11,7 @@ from components.add_registros import AddRegistros
 
 class UINutricion(ft.View):
     def __init__(self, page: ft.Page):
-        super().__init__(route="/")
+        #super().__init__()
         self.page = page
         self.page.padding = 0
         self.page.adaptive = True
